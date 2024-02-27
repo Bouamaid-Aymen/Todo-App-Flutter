@@ -57,6 +57,8 @@ class _AddTodoPageState extends State<AddTodoPage> {
     final response = await http.post(uri,
         body: jsonEncode(Body), headers: {'Content-Type': 'application/json'});
     if (response.statusCode == 201) {
+      titleController.text = '';
+      descriptionController.text = '';
       showSuccessMessage('Creation Success');
     } else {
       showErroMessage('Creation failed');
@@ -65,12 +67,19 @@ class _AddTodoPageState extends State<AddTodoPage> {
 
   //API Response Recation
   void showSuccessMessage(String message) {
-    final snackBar = SnackBar(content: Text(message));
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+      ),
+    );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void showErroMessage(String message) {
-    final snackBar = SnackBar(content: Text(message));
+    final snackBar = SnackBar(
+      content: Text(message, style: TextStyle(color: Colors.white)),
+      backgroundColor: Colors.red,
+    );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
