@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class AddTodoPage extends StatefulWidget {
-  const AddTodoPage({Key? key}) : super(key: key);
+  final Map? todo;
+  const AddTodoPage({super.key, this.todo});
 
   @override
   State<AddTodoPage> createState() => _AddTodoPageState();
@@ -13,11 +14,25 @@ class AddTodoPage extends StatefulWidget {
 class _AddTodoPageState extends State<AddTodoPage> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  bool isEdit = false;
+  @override
+  void initState() {
+    super.initState();
+    final todo = widget.todo;
+    if (todo != null) {
+      isEdit = true;
+      final title = todo['title'];
+      final description = todo['description'];
+      titleController.text = title;
+      descriptionController.text = description;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Todo'),
+        title: Text(isEdit ? 'Edit Todo' : 'Add Todo'),
       ),
       body: ListView(
         padding: EdgeInsets.all(20),
@@ -35,12 +50,43 @@ class _AddTodoPageState extends State<AddTodoPage> {
           ),
           SizedBox(height: 20),
           ElevatedButton(
-            onPressed: submitData,
-            child: Text('Sumbit'),
+            onPressed: isEdit ? updateData : submitData,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(isEdit ? 'Update' : 'Sumbit'),
+            ),
           )
         ],
       ),
     );
+  }
+
+  Future<void> updateData() async {
+    final todo = widget.todo;
+    if (todo == null) {
+      print('You can not call update without todo data ');
+      return;
+    }
+    final id = todo['_id'];
+    final Title = titleController.text;
+    final description = descriptionController.text;
+    final Body = {
+      "title": Title,
+      "description": description,
+      "is_completed": false,
+    };
+    final url = "https://api.nstack.in/v1/todos/$id";
+    final uri = Uri.parse(url);
+    final response = await http.put(
+      uri,
+      body: jsonEncode(Body),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      showSuccessMessage('Updation Success');
+    } else {
+      showErroMessage('Updation failed');
+    }
   }
 
   Future<void> submitData() async {
